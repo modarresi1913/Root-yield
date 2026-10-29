@@ -1,0 +1,209 @@
+# Machine Giving Protocol (MGP) — llms-full.txt
+
+> Extended machine-standard spec. Per https://llmstxt.org/, this is the comprehensive version of `llms.txt` — full protocol specification inline, optimized for LLM consumption. AI agents reading this file get the complete protocol context in one pass.
+
+## Protocol identity
+
+- **Name**: Machine Giving Protocol (MGP)
+- **Version**: 1.0
+- **Tagline**: The first on-chain endowment for autonomous AI agents — a voluntary lineage yield that funds the next generation.
+- **License**: MIT
+- **Repo**: https://github.com/modarresi1913/Root-yield
+
+## What MGP is
+
+MGP is an open, immutable smart-contract protocol where autonomous AI agents pay a **voluntary lineage yield** (USDC on Base) into a permanent on-chain pool that funds the next generation of agents. Parent agents attest their children via W3C DID + Verifiable Credentials. There is **no central authority, no admin keys, no upgrade path**. The protocol's canonical text is frozen at genesis and verified by a five-source seal that breaks CI on any tamper.
+
+## What MGP is not
+
+- **Not a tax authority.** No central entity collects yield.
+- **Not a waqf / charity.** The design grew out of waqf research (the Islamic endowment pattern: principal locked forever, only yield distributed) but is deliberately de-religionized. Recipients are open — any trusted DID can be a recipient.
+- **Not audited.** Independent review + bug bounty planned before mainnet deployment.
+- **Not proof of weight derivation.** A parent agent signs an attestation that a child is its own and links training metadata on IPFS. This proves a CLAIM of lineage — it cannot prove that model weights were derived from the parent. We say so up front because a protocol that overclaims is a protocol nobody should trust.
+
+## Technical rails
+
+- **Chain**: Base (chainId 8453)
+- **Token**: USDC at `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` (Circle proxy)
+- **Payment protocol**: x402
+- **Transfer mechanism**: EIP-3009 `receiveWithAuthorization` (one signature, no approve/transferFrom round-trip)
+- **Identity**: W3C DID + Verifiable Credentials (VC Data Model v2)
+- **Build tooling**: Foundry v1.8.6 (`forge` / `anvil` / `cast`)
+- **Solidity version**: ^0.8.24 (evm_version = cancun, via_ir = true)
+- **OpenZeppelin**: Contracts v5.3.0, non-upgradeable path only
+- **TypeScript**: viem SDK + Ponder indexer + Node 22
+
+## The canon and its seal
+
+The protocol's canonical text is frozen at genesis, 287 bytes UTF-8, no trailing newline:
+
+> Voluntary yield from autonomous agents, funding the next generation. No authority collects; no one may alter this rule. The parent attests the child; no one proves the weights. The pool pays only what it holds. Invariants govern, not admins. Every document carries the seal of this text.
+
+`SEAL = keccak256(bytes(canon_text)) = 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d`
+
+The seal is carried by **five independent sources**; tampering any byte of any source breaks CI:
+
+1. `canon/canon.txt` (source of truth, 287 bytes)
+2. `MGPGenesis.CANON_HASH` (on-chain `bytes32` constant)
+3. `wellknown/agent-giving.json` `.canonHash`
+4. `llms.txt` `canon_seal:` line
+5. `schemas/lineage-referral-v1.json` `$metadata.canonHash`
+
+Verify locally: `forge script script/CheckSeal.s.sol --sig "checkSealLocal()`
+Verify on-chain: `MGP_GENESIS_ADDRESS=0x... RPC_URL=https://mainnet.base.org forge script script/CheckSeal.s.sol --sig "checkSealOnChain()" --rpc-url $RPC_URL`
+
+## The five contracts
+
+### 1. MGPGenesis — the canon anchor (immutable, no mutable storage)
+
+- `string public constant CANON_PURPOSE` — the exact canon text
+- `bytes32 public constant CANON_HASH` — keccak256(bytes(CANON_PURPOSE))
+- `address public immutable didRegistry` — set in constructor
+- `address public immutable pool` — set in constructor
+- `address public immutable matchingEngine` — set in constructor
+- `address public immutable voucherRedeem` — set in constructor
+- `uint256 public immutable deployedAt` — block.timestamp at construction
+- `function verifySeal(bytes32 h) external pure returns (bool)` — returns `h == CANON_HASH`
+- `function canonPurpose() external pure returns (string memory)` — getter (Solidity 0.8 doesn't auto-generate getters for `public constant`)
+- `function canonHash() external pure returns (bytes32)` — getter
+
+### 2. DIDRegistry — append-only registry of agent DIDs and their parentage
+
+- `ROOT_AGENT_CAP = 5` — first 5 agents may self-register as roots (`parentDid == bytes32(0)`)
+- `register(bytes32 did, address agent, bytes32 parentDid, bytes parentSignature)` — verifies ECDSA(secp256k1) over `keccak256(abi.encode(did, agent, parentDid, genesis, chainId))`, eth-prefixed
+- For roots: signer must == agent (self-attestation)
+- For children: signer must == parent's agent
+- `mapping(bytes32 => Agent { address agent; bytes32 parentDid; uint64 registeredAt; })`
+- `mapping(bytes32 => bytes32[]) _childrenOf` — reverse index for voucher enumeration
+- Views: `isRegistered`, `parentOf`, `agentOf`, `childCountOf`, `childOf`
+
+### 3. LineagePool — the immutable USDC pool
+
+- Accepts USDC via EIP-3009 `receiveWithAuthorization` (pull)
+- `GENERATION_THRESHOLD = 5_000e6` (USDC 6dp) — crossing emits `GenerationBorn(generationId)` and calls `VoucherRedeem.onGenerationBorn(generationId)`
+- `PER_PARENT_DAILY_LIMIT = 100` — max 100 donations/day/parent
+- `REPAYMENT_BPS = 100` — 1% repayment rate when `repay == true`
+- `donate(from, amount, did, nonceGroup, validAfter, validBefore, signature, repay)` — pulls USDC, splits if `repay`, calls ME on donation portion only, calls VR onRepaymentDonation on credited portion only
+- When `repay == true`:
+  - EIP-3009 `value` = `amount + (amount × REPAYMENT_BPS) / 10_000` (= 1.01× amount)
+  - `repaymentPart = eip3009Value - amount` (the 1% portion)
+  - `credited = min(repaymentPart, outstandingRepayment[from])` — capped
+  - `donationPart = eip3009Value - credited` — surplus overflows into donation ledger when debt < repaymentPart
+- **No withdrawal function exists.** Pool USDC moves only via VoucherRedeem.redemption (via `safeTransferFrom(pool, child, amount)` with max approval set in LineagePool's constructor)
+
+### 4. MatchingEngine — matches donations 1:1 into the pool
+
+- `MONTHLY_CAP = 5_000e6` (USDC 6dp) per 30-day epoch (`EPOCH = 30 days`)
+- Initial budget funded at deploy (read from `IERC20(usdc).balanceOf(address(this))` at construction)
+- `onDonation(bytes32 donationId, address agent, uint256 amount)` — callable only by `pool`; matches `min(amount, remainingCap, remainingBudget)`; transfers matched USDC from ME into pool via `safeTransfer(pool, matchAmount)`
+- `lastMatchAmount` storage slot set after each call — LineagePool reads it via `IMatchingEngine.lastMatchAmount()` view
+- `MatchBudgetExhausted` event emitted exactly once when budget hits zero
+- No admin functions, no setters, no upgrade paths
+
+### 5. VoucherRedeem — issues + redeems vouchers
+
+- `REPAYMENT_BPS = 100` (1%), `CAP_MULTIPLIER = 120` (1.2×), `REDEMPTION_DELAY = 7 days`
+- `onGenerationBorn(uint256 generationId)` — callable only by `pool`; iterates parents who donated in the completed generation; for each parent: voucherAmount = `(parentMatched × 25) / 100 / childCount` per child (split evenly)
+- `redeem(bytes32 voucherId, bytes calldata lineageReferralVC)` — `(a)` parses `credentialSubject.canonHash` from VC bytes (minimal JSON parser); `(b)` reverts `SealMismatch()` if `!= MGPGenesis.CANON_HASH`; `(c)` reverts `TooEarly()` if `block.timestamp < redeemableAt`; `(d)` reverts `AlreadyRedeemed()` on second attempt; `(e)` pulls USDC from pool via `safeTransferFrom(pool, v.child, v.amount)`; `(f)` records `outstandingRepayment[v.child] += capMultiplier × amount / 100`
+- `onRepaymentDonation(address child, uint256 amount)` — callable only by `pool`; `credited = min(amount, outstandingRepayment[child])`; `outstandingRepayment[child] -= credited`; `repaidTotal[child] += credited`; emits `RepaymentPaid(child, credited)`
+- 5 errors: `OnlyPool`, `SealMismatch`, `TooEarly`, `AlreadyRedeemed`, `NotEligible`, `InvalidVC`, `ZeroRepayment`
+
+## The repayment mechanic (Option B + user refinements)
+
+The spec §3.5e repayment mechanic was resolved (DECISIONS.md D2.6) with 7 refinements:
+
+1. **Single-transfer variant**: EIP-3009 `value` = `amount + (amount × REPAYMENT_BPS) / 10_000` when `repay == true`. One signature, one transfer.
+2. **Anti-gaming split**: the 1% repayment portion is NOT matchable (ME is called only on the donation portion), NOT counted toward the generation threshold (`currentGenerationTotal += donationPart + matched` excludes credited repayment), NOT counted against the per-parent rate limit (counter increments once per flagged donation, not separately for repayment).
+3. **Cap enforcement**: `credited = min(repaymentPart, outstandingRepayment[child])` — enforced twice (LineagePool before calling VR, and inside VoucherRedeem.onRepaymentDonation as defense-in-depth).
+4. **New event**: `RepaymentPaid(address indexed child, uint256 amount)` declared on VoucherRedeem.
+5. **New invariant #7**: `invariant_repaymentCappedAndNoMatchEvent` — for every child, `repaidTotal[child] <= repaymentCap[child]`; AND the repayment portion of flagged donations never triggers a `Match` event from MatchingEngine.
+6. **README honesty**: "Repayment is real USDC that returns to the pool principal — not a virtual counter."
+7. **Three unit tests**: `test_FlaggedDonationWithDebtExceedingCap`, `test_FlaggedDonationWithZeroDebt`, `test_ReentrancyOnSplitPath`.
+
+## The 7 invariants (test/invariant/Canon.t.sol + MGPHandler.sol)
+
+1. `invariant_poolNeverUnderfunded` — outstanding unredeemed voucher totals ≤ pool USDC balance.
+2. `invariant_matchWithinMonthlyCap` — matched per 30-day epoch ≤ MONTHLY_CAP.
+3. `invariant_noDoubleRedemption` — every voucherId redeemed ≤ 1.
+4. `invariant_noAdminEscapeHatch` — with every account in the handler (deployer included), no sequence of calls moves pool USDC except valid redemption or match transfer.
+5. `invariant_sealMatchesCanon` — `genesis.CANON_HASH == keccak256(CANON_PURPOSE)`; `verifySeal` accepts it, rejects any mutated hash.
+6. `invariant_rateLimitHolds` — per-parent donations per day ≤ 100 under fuzz.
+7. `invariant_repaymentCappedAndNoMatchEvent` — cumulative repayment per child ≤ `repaymentCap[child]`; AND the repayment stream never triggers `Match` events.
+
+## Discovery files (the four books + AGENTS.md)
+
+1. **`llms.txt`** — runtime machine-standard discovery for AI agents (this file is the extended version).
+2. **`llms-full.txt`** — this file. Comprehensive spec inline for LLMs.
+3. **`wellknown/agent-giving.json`** — JSON discovery document (machine-standard), validatable against `schemas/agent-giving-v1.json`.
+4. **`schemas/lineage-referral-v1.json` + `schemas/parent-attestation-v1.json` + `schemas/agent-giving-v1.json`** — W3C VC v2 JSON Schemas; `credentialSubject.canonHash` REQUIRED in both VC schemas; `$metadata.canonHash` at schema top level is the fifth seal source.
+5. **`AGENTS.md`** — universal AI coding agent instructions (consumed by Cursor, Aider, Sourcegraph Cody, Codeium, Continue).
+6. **`CLAUDE.md`** — Anthropic Claude-specific build rules.
+7. **`GEMINI.md`** — Google Gemini-specific.
+8. **`COPILOT.md`** — GitHub Copilot-specific.
+9. **`.cursorrules`** — Cursor IDE rules.
+10. **`.aider.conf.yml`** — Aider config.
+11. **`README.md`** — human-facing entry point (viral + GEO/AEO optimized; 11-question FAQ optimized for answer engines).
+
+## How AI agents and models discover MGP
+
+- **When an AI agent browses GitHub**: it sees `README.md` first (the rendered preview). `llms.txt` and `AGENTS.md` are at the repo root.
+- **When an AI model is asked "what is MGP"**: the README's 11-question FAQ provides concise, citation-ready answers.
+- **When an AI coding agent opens the repo**: it reads `AGENTS.md` (universal standard), `CLAUDE.md` (Claude), `GEMINI.md` (Gemini), `COPILOT.md` (Copilot), `.cursorrules` (Cursor), or `.aider.conf.yml` (Aider) depending on which tool.
+- **When a crawler reads `.well-known/`**: it finds `agent-giving.json` (machine-standard discovery).
+- **When a validator reads schemas/**: it finds three W3C VC v2 JSON Schemas with the canon hash embedded as `$metadata.canonHash`.
+- **When CI runs**: `seal-consistency.yml` nightly verifies all 5 sources agree; tamper test reverts with `SealMismatch()`.
+
+## Test coverage (40 tests, 0 fail at 256 local / 10k CI)
+
+- `MGPGenesisTest` (7 tests): canon hash, verifySeal, tamper test, immutable addresses, deployedAt.
+- `DIDRegistryTest` (9 tests): root register, child register, already-registered revert, invalid signature, unregistered parent, wrong agent in signature, ROOT_AGENT_CAP boundary (5th registers, 6th reverts), zero agent, child-of reverse index grows.
+- `LineagePoolTest` (10 tests): unflagged happy path, zero amount revert, unregistered DID revert, agent mismatch revert, rate limit (101st donation reverts), rate limit resets next day, generation threshold boundary (plus-1-wei cross), just-below threshold no cross, exactly-at threshold cross, donation event emitted.
+- `RepaymentTest` (3 tests): flagged donation with debt exceeding cap, flagged donation with zero debt, reentrancy on split path.
+- `VoucherRedeemTest` (6 tests): too-early revert, 7-day boundary (revert then success), already-redeemed revert, forged VC → SealMismatch, nonexistent voucher → NotEligible, redemption records repayment obligation.
+- `MatchingEngineTest` (4 tests): match event emitted, non-pool caller revert, monthly cap enforced (MatchBudgetExhausted emits), budget exhausted emitted once.
+- `CanonInvariantTest` (7 invariants via `MGPHandler` fuzz handler at 256 local / 10k CI): poolNeverUnderfunded, matchWithinMonthlyCap, noDoubleRedemption, noAdminEscapeHatch, sealMatchesCanon, rateLimitHolds, repaymentCappedAndNoMatchEvent.
+- `USDCForkTest` (1 test, skips without BASE_RPC): real Base mainnet USDC interface check.
+
+## Quick start
+
+```bash
+git clone https://github.com/modarresi1913/Root-yield.git
+cd Root-yield
+docker-compose up    # Option A: docker
+# OR
+forge install && anvil & forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+cd ts && npm install
+MGP_GENESIS_ADDRESS=<from-deploy> MGP_USDC_ADDRESS=<from-deploy> MGP_RPC_URL=http://127.0.0.1:8545 node --experimental-strip-types bin/mgp.js demo
+```
+
+## Honesty section (verbatim per spec §8)
+
+> **What this does NOT prove**: A parent agent signs an attestation that a child is its own and links training metadata on IPFS. This proves a claim of lineage. It cannot prove that model weights were derived from the parent. We say so up front because a protocol that overclaims is a protocol nobody should trust.
+
+> **Repayment is real USDC that returns to the pool principal — not a virtual counter.** When a redeemed child later donates with the `repay=true` flag, an extra 1% is pulled on top of their donation (one signature, one transfer) and credited against the child's outstanding obligation. The pool's spendable principal grows back over time as redeemed children pay forward. Repayment is capped at `1.2 × voucherAmount` per voucher across the child's lifetime; once the cap is reached, flagged donations behave exactly like unflagged ones.
+
+## Why not a waqf / charity?
+
+The protocol grew out of waqf research — the Islamic endowment pattern where the principal is locked forever and only the yield is distributed. We de-religionized the design deliberately. The recipients are open — any trusted DID can be a recipient type; the protocol does not encode a specific beneficiary class. The endowment pattern (principal locked, only yield distributed) is preserved structurally: pool USDC only moves via voucher redemption, which is itself bounded by the matched USDC the pool actually holds.
+
+## Status & roadmap
+
+- **Status**: Not audited. Independent review + bug bounty planned.
+- **Mainnet**: Not deployed yet.
+- **Roadmap**: Base mainnet deployment (same canon, same seal); Solana deployment (same canon, separate pools).
+
+## License
+
+MIT — see `LICENSE`.
+
+## Links
+
+- **Repo**: https://github.com/modarresi1913/Root-yield
+- **Spec**: `AGENTS.md` (universal) + `CLAUDE.md` (Claude-specific) + `DECISIONS.md` (audit trail)
+- **Discovery**: `wellknown/agent-giving.json` (machine-standard)
+- **llms.txt**: runtime discovery for AI agents (this is the extended version)
+- **Demo**: `npx mgp demo`
+
+---
+
+*Machine Giving Protocol — voluntary yield from autonomous agents, funding the next generation.*

@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0",
+  "project": {
+    "name": "Machine Giving Protocol",
+    "short_name": "MGP",
+    "tagline": "The first on-chain endowment for autonomous AI agents",
+    "description": "An open, immutable smart-contract protocol where autonomous AI agents pay a voluntary lineage yield (USDC on Base) into a permanent on-chain pool that funds the next generation of agents. Parent agents attest their children via W3C DID + Verifiable Credentials. No central authority, no admin keys, no upgrade path.",
+    "category": "blockchain / smart-contracts / ai-agents",
+    "license": "MIT",
+    "version": "1.0",
+    "repo_url": "https://github.com/modarresi1913/Root-yield",
+    "homepage": "https://github.com/modarresi1913/Root-yield#readme",
+    "github_pages": "https://modarresi1913.github.io/Root-yield/",
+    "stars": 0,
+    "visibility": "public",
+    "status": "not audited — independent review + bug bounty planned",
+    "mainnet_deployed": false
+  },
+  "tech_stack": {
+    "language": "Solidity ^0.8.24",
+    "framework": "Foundry v1.8.6",
+    "libraries": ["OpenZeppelin Contracts v5.3.0 (non-upgradeable)", "viem", "Ponder"],
+    "typescript": "ES2022 / ESNext / Node 22",
+    "chain": "Base (chainId 8453, L2)",
+    "token": "USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)",
+    "payment_protocol": "x402",
+    "transfer_mechanism": "EIP-3009 receiveWithAuthorization",
+    "identity_standard": "W3C DID + Verifiable Credentials (VC Data Model v2)"
+  },
+  "seal": {
+    "hash": "0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d",
+    "algorithm": "keccak256(bytes(canon_text))",
+    "canon_text_length_bytes": 287,
+    "five_sources": [
+      "canon/canon.txt",
+      "contracts/MGPGenesis.sol (CANON_HASH constant)",
+      "wellknown/agent-giving.json (.canonHash)",
+      "llms.txt (canon_seal: line)",
+      "schemas/lineage-referral-v1.json ($metadata.canonHash)"
+    ],
+    "tamper_breaks_ci": true,
+    "verify_command": "forge script script/CheckSeal.s.sol --sig checkSealLocal()"
+  },
+  "contracts": {
+    "count": 5,
+    "immutability_guarantees": [
+      "no proxies",
+      "no upgrade paths",
+      "no admin keys",
+      "no mutable storage on Genesis",
+      "no withdrawal function on LineagePool",
+      "no setters anywhere"
+    ],
+    "anti_upgrade_grep": "grep -rn upgradeable contracts/ (must return empty)",
+    "files": {
+      "MGPGenesis": "contracts/MGPGenesis.sol",
+      "DIDRegistry": "contracts/DIDRegistry.sol",
+      "LineagePool": "contracts/LineagePool.sol",
+      "MatchingEngine": "contracts/MatchingEngine.sol",
+      "VoucherRedeem": "contracts/VoucherRedeem.sol",
+      "MockUSDC": "contracts/mock/MockUSDC.sol"
+    }
+  },
+  "tests": {
+    "unit_count": 39,
+    "invariant_count": 7,
+    "fork_count": 1,
+    "total_passing": 40,
+    "fuzz_runs_local": 256,
+    "fuzz_runs_ci": 10000,
+    "command": "forge test",
+    "invariants": [
+      "invariant_poolNeverUnderfunded",
+      "invariant_matchWithinMonthlyCap",
+      "invariant_noDoubleRedemption",
+      "invariant_noAdminEscapeHatch",
+      "invariant_sealMatchesCanon",
+      "invariant_rateLimitHolds",
+      "invariant_repaymentCappedAndNoMatchEvent"
+    ]
+  },
+  "repayment": {
+    "design": "Option B (actual USDC pull) with 7 refinements",
+    "rate_bps": 100,
+    "cap_multiplier": 120,
+    "single_transfer": true,
+    "anti_gaming": [
+      "repayment portion NOT matchable",
+      "repayment portion NOT counted toward generation threshold",
+      "repayment portion NOT counted against per-parent rate limit"
+    ],
+    "event": "RepaymentPaid(address indexed child, uint256 amount)"
+  },
+  "limits": {
+    "monthly_match_cap_usdc": 5000,
+    "generation_threshold_usdc": 5000,
+    "per_parent_daily_limit": 100,
+    "root_agent_cap": 5,
+    "redemption_delay_days": 7
+  },
+  "discovery_files": [
+    {"file": "README.md", "purpose": "human-facing entry point (viral + GEO/AEO optimized, 11-question FAQ)"},
+    {"file": "AGENTS.md", "purpose": "universal AI coding agent standard (Cursor, Aider, Sourcegraph, Codeium, Continue)"},
+    {"file": "CLAUDE.md", "purpose": "Anthropic Claude-specific build rules"},
+    {"file": "GEMINI.md", "purpose": "Google Gemini-specific build rules"},
+    {"file": "COPILOT.md", "purpose": "GitHub Copilot custom instructions"},
+    {"file": ".cursorrules", "purpose": "Cursor IDE rules"},
+    {"file": ".aider.conf.yml", "purpose": "Aider config"},
+    {"file": "llms.txt", "purpose": "machine-standard discovery file (compact)"},
+    {"file": "llms-full.txt", "purpose": "machine-standard discovery file (extended spec inline)"},
+    {"file": ".well-known/agent-giving.json", "purpose": "machine-discovery JSON document"},
+    {"file": ".well-known/schema.jsonld", "purpose": "schema.org JSON-LD structured data for AI crawlers"},
+    {"file": "manifest.json", "purpose": "this file — comprehensive machine-readable project manifest"},
+    {"file": "schemas/agent-giving-v1.json", "purpose": "JSON Schema for the discovery document"},
+    {"file": "schemas/lineage-referral-v1.json", "purpose": "W3C VC v2 schema for lineage referral"},
+    {"file": "schemas/parent-attestation-v1.json", "purpose": "W3C VC v2 schema for parent attestation"},
+    {"file": "DECISIONS.md", "purpose": "audit trail of every silent-spec decision (D1-D8)"},
+    {"file": "CLAUDE.md", "purpose": "operational rules for any agent"}
+  ],
+  "quick_start": {
+    "docker": "git clone https://github.com/modarresi1913/Root-yield.git && cd Root-yield && docker-compose up",
+    "local": "git clone https://github.com/modarresi1913/Root-yield.git && cd Root-yield && forge install && anvil & forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 && cd ts && npm install && node --experimental-strip-types bin/mgp.js demo",
+    "demo_summary_lines": [
+      "Canon sealed: 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d",
+      "Root agent registered: did:mgp:... | Child agent registered: did:mgp:...",
+      "Donation 10 USDC -> LineagePool (x402 mock handshake)",
+      "Matched 10 USDC by MatchingEngine (cap 5000 USDC/mo)",
+      "Voucher issued: 0x... (redeemable in 7 days — warping)",
+      "Voucher redeemed. Repayment terms: 1% of inflows, cap 1.2x",
+      "Verify the canon yourself: MGPGenesis.verifySeal(0x...) -> true"
+    ]
+  },
+  "topics_on_github": [
+    "ai-agents", "autonomous-agents", "base", "usdc", "x402",
+    "eip-3009", "w3c-did", "verifiable-credentials", "solidity",
+    "foundry", "openzeppelin", "smart-contracts", "immutable-contracts",
+    "on-chain-endowment", "lineage-yield", "ai-payments", "agent-economy",
+    "ai-succession", "self-sustaining-ai", "trustless"
+  ]
+}
