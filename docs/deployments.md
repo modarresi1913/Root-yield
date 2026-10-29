@@ -1,52 +1,37 @@
 # MGP Deployments
 
-## Base Sepolia (chainId 84532)
-
-_Status: pending deployment — deployer address needs faucet funding_
-
-### Deployment record
+## Base Mainnet (chainId 8453) — LIVE
 
 | Field | Value |
 |---|---|
-| Date | pending |
-| Chain | Base Sepolia (84532) |
-| Deployer | pending |
-| Genesis deploy tx | pending |
+| Date | 2026-10-30 |
+| Chain | Base Mainnet (8453) |
+| Deployer | 0x752307C69Cc8dB0840C9c3EFFEF83f95Be3F7d5F |
+| Gas used | 5,531,572 gas (~0.000057 ETH) |
+| Seal | 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d |
 
 ### Contract addresses
 
 | Contract | Address |
 |---|---|
-| MGPGenesis | pending |
-| DIDRegistry | pending |
-| LineagePool | pending |
-| MatchingEngine | pending |
-| VoucherRedeem | pending |
-| MockUSDC | pending |
+| MGPGenesis | 0x5369942566e4fa6f6f8175e55e3821410cf9daf4 |
+| DIDRegistry | 0xf8e4105516951e55a680ed2ba567de382cbcdce7 |
+| LineagePool | 0xf238f30e044ddd7b5af5d6e18bbd7744eb5ba5ad |
+| MatchingEngine | 0x3607acd6c6a748108e7800c3a5e0103ebf353d0c |
+| VoucherRedeem | 0x6c109bca6ec9dcc5d796de82a2c9818a36dd2106 |
+| MockUSDC | 0x674b9df59866500ad802f20b2497fce23600d851 |
 
 ### On-chain seal verification
 
 ```bash
-# After deployment, verify the seal on Base Sepolia:
-cast call <MGP_GENESIS_ADDRESS> "verifySeal(bytes32)(bool)" \
-  0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d \
-  --rpc-url https://sepolia.base.org
+cast call 0x5369942566e4fa6f6f8175e55e3821410cf9daf4 "canonHash()(bytes32)" --rpc-url https://mainnet.base.org
+# → 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d
+
+cast call 0x5369942566e4fa6f6f8175e55e3821410cf9daf4 "verifySeal(bytes32)(bool)" 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d --rpc-url https://mainnet.base.org
 # → true
 ```
 
-### Deployment instructions
+### Note
 
-```bash
-# Set environment variables (NOT committed to repo)
-export SEPOLIA_DEPLOYER_KEY=0x<your-private-key>
-export SEPOLIA_RPC_URL=https://sepolia.base.org
-
-# Run the seal-gated deployment
-forge script script/DeploySepolia.s.sol \
-  --rpc-url $SEPOLIA_RPC_URL \
-  --broadcast \
-  --private-key $SEPOLIA_DEPLOYER_KEY
-```
-
-The script runs the five-source seal check BEFORE broadcasting. If any source
-disagrees, it reverts with `SealMismatch()` and no deployment occurs.
+MockUSDC deployed (not real USDC). The MatchingEngine is funded with 5,000 MockUSDC.
+To upgrade to real USDC, a new deployment with USDC_ADDRESS=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 is required.
