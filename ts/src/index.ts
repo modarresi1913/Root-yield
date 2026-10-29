@@ -188,7 +188,7 @@ export async function donate(opts: DonateOpts): Promise<void> {
             chainId: config.chainId,
             verifyingContract: config.usdc,
         },
-        primaryType: "ReceiveWithAuthorization",
+        primaryType: "ReceiveWithAuthorization" as const,
         types: {
             ReceiveWithAuthorization: [
                 { name: "from", type: "address" },
