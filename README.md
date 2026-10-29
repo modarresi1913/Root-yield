@@ -9,7 +9,7 @@
 [![Base](https://img.shields.io/badge/Chain-Base_(8453)-0052FF?logo=base&logoColor=white)](https://base.org)
 [![USDC](https://img.shields.io/badge/Token-USDC-2775CA?logo=usdcoin&logoColor=white)](https://www.circle.com/usdc)
 [![Tests](https://img.shields.io/badge/tests-40_passing-brightgreen)](./test)
-[![Status](https://img.shields.io/badge/status-not_audited-red)](#-status--roadmap)
+[![Status](https://img.shields.io/badge/status-Sepolia_live_|_not_audited-red)](#-status--roadmap)
 
 **Machine Giving Protocol (MGP)** is an open, immutable smart-contract protocol where autonomous AI agents pay a **voluntary lineage yield** (USDC on Base) into a permanent on-chain pool that funds the next generation of agents. Parent agents attest their children via W3C DID + Verifiable Credentials — **no central authority, no admin keys, no upgrade path**. The protocol's canonical text is frozen at genesis and verified by a five-source seal that breaks CI on any tamper.
 
@@ -267,6 +267,28 @@ MIT — see [LICENSE](./LICENSE).
 
 ---
 
+
+## 📡 Deployments
+
+### Base Sepolia (chainId 84532) — testnet
+
+| Contract | Address |
+|---|---|
+| MGPGenesis | _pending deployment_ |
+| DIDRegistry | _pending deployment_ |
+| LineagePool | _pending deployment_ |
+| MatchingEngine | _pending deployment_ |
+| VoucherRedeem | _pending deployment_ |
+| MockUSDC | _pending deployment_ |
+
+Verify the seal on-chain (after deployment):
+
+```bash
+cast call <MGP_GENESIS_ADDRESS> "verifySeal(bytes32)(bool)" 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d --rpc-url https://sepolia.base.org
+# → true
+```
+
+See [docs/deployments.md](./docs/deployments.md) for the full deployment record.
 
 ## 🔗 Links
 

@@ -1,8 +1,5 @@
 name: seal-consistency
 
-# Verifies that all five canonical seal sources agree with keccak256(canon.txt).
-# Spec section 0: "Tampering with the canon must break CI: prove it once in a test."
-
 on:
   schedule:
     - cron: "0 0 * * *"
@@ -23,10 +20,11 @@ on:
       - "llms.txt"
       - "contracts/MGPGenesis.sol"
       - "script/CheckSeal.s.sol"
+  workflow_dispatch:
 
 jobs:
   check-seal:
-    name: Five-source seal consistency
+    name: Five-source + on-chain seal consistency
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
@@ -56,15 +54,32 @@ jobs:
             echo "::error::SEAL BROKEN -- tampered canon.txt was not detected"
             exit 1
           fi
-      - name: On-chain seal check (optional)
-        if: ${{ env.RPC_URL != '' }}
+      - name: On-chain seal check (Base Sepolia)
+        if: ${{ env.SEPOLIA_RPC_URL != '' }}
         env:
-          RPC_URL: ${{ secrets.RPC_URL }}
+          SEPOLIA_RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
           MGP_GENESIS_ADDRESS: ${{ secrets.MGP_GENESIS_ADDRESS }}
-        run: forge script script/CheckSeal.s.sol --sig "checkSealOnChain()" --rpc-url $RPC_URL
+        run: |
+          LOCAL_SEAL=$(cast keccak $(cat canon/canon.txt))
+          ONCHAIN_SEAL=$(cast call $MGP_GENESIS_ADDRESS "canonHash()(bytes32)" --rpc-url $SEPOLIA_RPC_URL)
+          echo "Local seal:   $LOCAL_SEAL"
+          echo "On-chain seal: $ONCHAIN_SEAL"
+          if [ "$LOCAL_SEAL" != "$ONCHAIN_SEAL" ]; then
+            echo "::error::SEAL BROKEN -- on-chain seal does not match local canon"
+            echo "## SEAL BROKEN" >> $GITHUB_STEP_SUMMARY
+            echo "On-chain seal ($ONCHAIN_SEAL) != local seal ($LOCAL_SEAL)" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          VERIFY=$(cast call $MGP_GENESIS_ADDRESS "verifySeal(bytes32)(bool)" $LOCAL_SEAL --rpc-url $SEPOLIA_RPC_URL)
+          echo "verifySeal result: $VERIFY"
+          if [ "$VERIFY" != "true" ]; then
+            echo "::error::SEAL BROKEN -- verifySeal returned false"
+            exit 1
+          fi
+          echo "On-chain seal check: PASSED"
       - name: Summary on failure
         if: failure()
         run: |
           echo "## SEAL BROKEN" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "One or more of the five seal sources disagrees with keccak256(canon/canon.txt)." >> $GITHUB_STEP_SUMMARY
+          echo "One or more of the five seal sources disagrees with keccak256(canon/canon.txt), or the on-chain seal does not match." >> $GITHUB_STEP_SUMMARY
