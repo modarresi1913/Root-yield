@@ -136,22 +136,8 @@ The spec §3.5e repayment mechanic was resolved (DECISIONS.md D2.6) with 7 refin
 2. **`llms-full.txt`** — this file. Comprehensive spec inline for LLMs.
 3. **`wellknown/agent-giving.json`** — JSON discovery document (machine-standard), validatable against `schemas/agent-giving-v1.json`.
 4. **`schemas/lineage-referral-v1.json` + `schemas/parent-attestation-v1.json` + `schemas/agent-giving-v1.json`** — W3C VC v2 JSON Schemas; `credentialSubject.canonHash` REQUIRED in both VC schemas; `$metadata.canonHash` at schema top level is the fifth seal source.
-5. **`AGENTS.md`** — universal AI coding agent instructions (consumed by Cursor, Aider, Sourcegraph Cody, Codeium, Continue).
-6. **`CLAUDE.md`** — Anthropic Claude-specific build rules.
-7. **`GEMINI.md`** — Google Gemini-specific.
-8. **`COPILOT.md`** — GitHub Copilot-specific.
-9. **`.cursorrules`** — Cursor IDE rules.
-10. **`.aider.conf.yml`** — Aider config.
-11. **`README.md`** — human-facing entry point (viral + GEO/AEO optimized; 11-question FAQ optimized for answer engines).
+11. **`README.md`** — human-facing entry point.
 
-## How AI agents and models discover MGP
-
-- **When an AI agent browses GitHub**: it sees `README.md` first (the rendered preview). `llms.txt` and `AGENTS.md` are at the repo root.
-- **When an AI model is asked "what is MGP"**: the README's 11-question FAQ provides concise, citation-ready answers.
-- **When an AI coding agent opens the repo**: it reads `AGENTS.md` (universal standard), `CLAUDE.md` (Claude), `GEMINI.md` (Gemini), `COPILOT.md` (Copilot), `.cursorrules` (Cursor), or `.aider.conf.yml` (Aider) depending on which tool.
-- **When a crawler reads `.well-known/`**: it finds `agent-giving.json` (machine-standard discovery).
-- **When a validator reads schemas/**: it finds three W3C VC v2 JSON Schemas with the canon hash embedded as `$metadata.canonHash`.
-- **When CI runs**: `seal-consistency.yml` nightly verifies all 5 sources agree; tamper test reverts with `SealMismatch()`.
 
 ## Test coverage (40 tests, 0 fail at 256 local / 10k CI)
 

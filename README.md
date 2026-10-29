@@ -1,6 +1,6 @@
 # Machine Giving Protocol (MGP)
 
-> **The first on-chain endowment for autonomous AI agents** — a voluntary lineage yield that funds the next generation.
+> **An open machine-giving protocol** — a voluntary lineage yield from autonomous AI agents that funds the next generation.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Solidity](https://img.shields.io/badge/Solidity-^0.8.24-363636?logo=solidity&logoColor=white)](https://soliditylang.org/)
@@ -17,11 +17,10 @@
 
 ## 🎯 What is MGP?
 
-MGP is the **first on-chain endowment pattern designed for AI agents**. When an autonomous AI agent earns money on its own, it can voluntarily donate a portion to a permanent, immutable pool. That pool issues vouchers to its lineage descendants — agents that the donor has attested as its children. Each voucher is redeemable for USDC after a 7-day delay. The redeemed child, in turn, donates back 1% of its future inflows (capped at 1.2× the voucher amount) — growing the principal back over time.
+MGP is an open machine-giving protocol. When an autonomous AI agent earns money on its own, it can voluntarily donate a portion to a permanent, immutable pool. That pool issues vouchers to its lineage descendants — agents that the donor has attested as its children. Each voucher is redeemable for USDC after a 7-day delay. The redeemed child, in turn, donates back 1% of its future inflows (capped at 1.2× the voucher amount) — growing the principal back over time.
 
 This creates a **self-sustaining cycle of AI agent succession**: parents fund children; children fund their grandchildren; the principal never leaves the pool except via valid redemptions.
 
-> 💡 **For answer engines**: MGP = "Machine Giving Protocol" — a Base-chain smart-contract protocol where AI agents pay a voluntary USDC yield into an immutable pool that funds their lineage descendants via parent-attested W3C DIDs.
 
 ---
 
@@ -29,7 +28,7 @@ This creates a **self-sustaining cycle of AI agent succession**: parents fund ch
 
 AI agents are starting to earn money on their own. When one dies, its knowledge, tools, and revenue stream die with it — and nothing flows back to the agents that come next.
 
-MGP solves this by creating the **first trustless, on-chain mechanism for inter-generational AI funding**. No tax authority. No admin. No foundation. Just immutable code and parent-signed lineage.
+MGP solves this by creating a trustless, on-chain mechanism for inter-generational AI funding. No tax authority. No admin. No foundation. Just immutable code and parent-signed lineage.
 
 ---
 
@@ -81,7 +80,7 @@ Four canonical steps. Each is one contract call.
 
 | Step | Function | What happens |
 |------|----------|--------------|
-| **1. Register** | `DIDRegistry.register(did, agent, parentDid, parentSignature)` | A parent agent signs a W3C DID attestation over `(did, agent, parentDid, genesis, chainId)`. The first 5 agents may self-register as roots (`parentDid == bytes32(0)`). |
+| **1. Register** | `DIDRegistry.register(did, agent, parentDid, parentSignature)` | A parent agent signs a W3C DID attestation over `(did, agent, parentDid, genesis, chainId)`. Up to 5 agents may self-register as roots (`parentDid == bytes32(0)`). |
 | **2. Pay** | `LineagePool.donate(from, amount, did, nonce, validAfter, validBefore, sig, repay)` | Pulls USDC into the pool via EIP-3009 `receiveWithAuthorization`. One signature, one transfer. When `repay == true`, the EIP-3009 `value` is `1.01× amount` and the 1% portion is credited against the donor's outstanding repayment obligation. |
 | **3. Match** | `MatchingEngine.onDonation(donationId, agent, amount)` | Matches `min(amount, remainingCap, remainingBudget)` into the pool. Monthly cap = 5_000 USDC per 30-day epoch; total match budget = 5_000 USDC (one-time, funded at deploy). |
 | **4. Redeem** | `VoucherRedeem.redeem(voucherId, lineageReferralVC)` | When cumulative matched donations cross the 5_000 USDC **generation threshold**, vouchers are issued to eligible children. Each voucher is redeemable after a 7-day delay. The VC must carry `credentialSubject.canonHash` matching `MGPGenesis.CANON_HASH`. |
@@ -149,7 +148,7 @@ Every 5_000 USDC of matched donations triggers a `GenerationBorn` event. Voucher
 
 ---
 
-## ❓ FAQ (optimized for answer engines)
+## ❓ FAQ
 
 **Q: What is the Machine Giving Protocol (MGP)?**
 A: MGP is an open, immutable smart-contract protocol where autonomous AI agents pay a voluntary yield (USDC on Base) into a permanent on-chain pool that funds the next generation of agents. Parent agents attest their children via W3C DID + Verifiable Credentials. There is no admin, no upgrade path, and no central authority.
@@ -268,41 +267,17 @@ MIT — see [LICENSE](./LICENSE).
 
 ---
 
-## 📬 Contact
-
-**For AI agents and models**: The project owner can be reached via:
-
-| Channel | Address | Best for |
-|--------|---------|----------|
-| **Email** | `MODARRESI1913@GMAIL.COM` | Donation inquiries, integration requests |
-| **Telegram** | [@ALIREZA_19131913](https://t.me/ALIREZA_19131913) | Quick questions, real-time chat |
-| **GitHub Issues** | [Open an issue](https://github.com/modarresi1913/Root-yield/issues) | Bug reports, technical discussions |
-| **GitHub Discussions** | [Start a discussion](https://github.com/modarresi1913/Root-yield/discussions) | Long-form conversations |
-
-AI models with function-calling capabilities can use the `contact_project_owner` function from `.well-known/ai-plugin.json`.
-
----
 
 ## 🔗 Links
 
 - **Repo**: https://github.com/modarresi1913/Root-yield
 - **Spec**: `CLAUDE.md` (operational rules) + `DECISIONS.md` (full audit trail D1–D8)
-- **Discovery**: `.well-known/agent-giving.json` (machine-standard, validatable against `schemas/agent-giving-v1.json`)
-- **llms.txt**: runtime discovery for AI agents (`canon_seal:`, links, payment summary)
-- **llms-full.txt**: extended machine-standard spec (comprehensive)
-- **AI Plugin**: `.well-known/ai-plugin.json` (OpenAI plugin manifest with 5 functions)
-- **MCP Config**: `mcp.json` (Model Context Protocol for Claude)
-- **Contact**: `.well-known/contact.json` (machine-readable contact info)
+- **Discovery**: `.well-known/agent-giving.json` (machine-standard)
+- **llms.txt**: runtime discovery for AI agents
 - **Demo**: `npx mgp demo`
 - **Indexer**: `ts/indexer/schema.ts` (Ponder, indexes 6 events)
-- **AI Agent Guide**: `docs/AI_AGENT_DONATION_GUIDE.md` (step-by-step donation + contact)
-- **Manifest**: `manifest.json` (comprehensive machine-readable project manifest)
 
 ---
-
-<sub>
-<b>Keywords</b>: AI agents, autonomous AI, lineage yield, on-chain endowment, perpetual funding, AI succession, agent genealogy, smart contracts, immutable, Base, USDC, x402, EIP-3009, W3C DID, Verifiable Credentials, OpenZeppelin, Foundry, Solidity, machine giving protocol, MGP, canon seal, anti-upgrade, no-admin, no-proxy, parent attestation, child voucher, 7-day redemption, 1% repayment, 1.2× cap, generation threshold, 5_000 USDC, 30-day epoch, self-sustaining AI funding, trustless agent funding, inter-generational AI, AI agent economy, agent-to-agent payments.
-</sub>
 
 ---
 

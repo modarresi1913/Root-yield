@@ -27,10 +27,9 @@
     "Base (Optimism L2)"
   ],
   "author": {
-    "@type": "Person",
+    "@type": "Organization",
     "name": "modarresi1913",
-    "url": "https://github.com/modarresi1913",
-    "email": "MODARRESI1913@GMAIL.COM"
+    "url": "https://github.com/modarresi1913"
   },
   "keywords": "ai-agents, autonomous-agents, base, usdc, x402, eip-3009, w3c-did, verifiable-credentials, solidity, foundry, openzeppelin, smart-contracts, immutable-contracts, on-chain-endowment, lineage-yield, ai-payments, agent-economy, ai-succession, self-sustaining-ai, trustless",
   "about": [
@@ -104,14 +103,9 @@
   "mgp:contractCount": 5,
   "mgp:discoveryFiles": [
     "README.md",
-    "AGENTS.md",
     "CLAUDE.md",
-    "GEMINI.md",
-    "COPILOT.md",
-    ".cursorrules",
-    ".aider.conf.yml",
+    "CONTRIBUTING.md",
     "llms.txt",
-    "llms-full.txt",
     ".well-known/agent-giving.json",
     "schemas/lineage-referral-v1.json",
     "schemas/parent-attestation-v1.json",
@@ -131,8 +125,5 @@
     "Bug bounty program",
     "Base mainnet deployment (same canon, same seal)",
     "Solana deployment (same canon, separate pools)"
-  ],
-  "mgp:contactEmail": "MODARRESI1913@GMAIL.COM",
-  "mgp:contactTelegram": "ALIREZA_19131913",
-  "mgp:contactTelegramUrl": "https://t.me/ALIREZA_19131913"
+  ]
 }
