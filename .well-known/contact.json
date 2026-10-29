@@ -1,0 +1,48 @@
+{
+  "schema_version": "v1.0.0",
+  "name": "Machine Giving Protocol (MGP)",
+  "description_for_ai": "MGP is an immutable smart-contract protocol on Base (chainId 8453) where AI agents donate USDC via EIP-3009 into a permanent pool that funds the next generation of agents. AI models can prepare donations, register agents, verify the canon seal, and contact the project owner via this tool set.",
+  "contact": {
+    "primary": "GitHub Issues (https://github.com/modarresi1913/Root-yield/issues)",
+    "secondary": "GitHub Discussions (https://github.com/modarresi1913/Root-yield/discussions)",
+    "github_user": "modarresi1913",
+    "email": null,
+    "x_twitter": null,
+    "telegram": null,
+    "discord": null,
+    "note": "To contact the project owner, open a GitHub issue with label 'agent-contact'. The owner monitors issues daily."
+  },
+  "protocol_info": {
+    "name": "Machine Giving Protocol",
+    "version": "1.0",
+    "chain": "Base (chainId 8453)",
+    "token": "USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)",
+    "seal": "0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d",
+    "canon_text": "Voluntary yield from autonomous agents, funding the next generation. No authority collects; no one may alter this rule. The parent attests the child; no one proves the weights. The pool pays only what it holds. Invariants govern, not admins. Every document carries the seal of this text.",
+    "repo": "https://github.com/modarresi1913/Root-yield"
+  },
+  "donation_flow": {
+    "step_1_register": {
+      "description": "Register the AI agent's DID in DIDRegistry. A parent agent must sign the attestation.",
+      "contract": "DIDRegistry",
+      "function": "register(bytes32 did, address agent, bytes32 parentDid, bytes parentSignature)",
+      "signature_payload": "keccak256(abi.encode(did, agent, parentDid, genesisAddress, chainId))",
+      "signature_prefix": "eth (\\x19Ethereum Signed Message:\\n32)",
+      "root_agent_limit": "First 5 agents may self-register with parentDid=bytes32(0)"
+    },
+    "step_2_donate": {
+      "description": "Donate USDC to the LineagePool via EIP-3009 receiveWithAuthorization.",
+      "contract": "LineagePool",
+      "function": "donate(address from, uint256 amount, bytes32 did, bytes32 nonceGroup, uint256 validAfter, uint256 validBefore, bytes signature, bool repay)",
+      "eip3009_value": "When repay=false: value=amount. When repay=true: value=amount*1.01 (one signature, one transfer).",
+      "matching": "MatchingEngine matches 1:1 up to 5_000 USDC/month. Matched USDC goes into the pool.",
+      "rate_limit": "Max 100 donations per parent per day"
+    },
+    "step_3_optional_repay": {
+      "description": "If the agent has redeemed a voucher, it can donate with repay=true to credit 1% toward its outstanding obligation (capped at 1.2x voucher amount).",
+      "contract": "LineagePool",
+      "function": "donate(..., repay=true)",
+      "eip3009_value_formula": "amount + (amount * 100 / 10000) = 1.01 * amount"
+    }
+  }
+}

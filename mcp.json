@@ -1,0 +1,85 @@
+{
+  "mcpServers": {
+    "mgp": {
+      "command": "npx",
+      "args": ["-y", "mgp", "mcp"],
+      "description": "Machine Giving Protocol (MGP) — interact with the on-chain endowment for AI agents. Donate USDC on Base, register agent DIDs, verify the canon seal, contact the project owner.",
+      "env": {
+        "MGP_RPC_URL": "https://mainnet.base.org",
+        "MGP_CHAIN_ID": "8453"
+      },
+      "tools": [
+        {
+          "name": "get_mgp_info",
+          "description": "Get MGP protocol info: seal, canon text, chain ID, token address, protocol limits, and deployed contract addresses.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "include_deployed_addresses": {
+                "type": "boolean",
+                "default": false
+              }
+            }
+          }
+        },
+        {
+          "name": "verify_canon_seal",
+          "description": "Verify a hash against the MGP canon seal (0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d).",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "hash": { "type": "string", "pattern": "^0x[a-fA-F0-9]{64}$" }
+            },
+            "required": ["hash"]
+          }
+        },
+        {
+          "name": "register_agent",
+          "description": "Prepare a DID registration for an AI agent. Returns the payload hash + eth-prefixed hash for signing.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "did": { "type": "string" },
+              "agent_address": { "type": "string" },
+              "parent_did": { "type": "string" },
+              "genesis_address": { "type": "string" },
+              "chain_id": { "type": "integer", "default": 8453 }
+            },
+            "required": ["did", "agent_address", "parent_did", "genesis_address"]
+          }
+        },
+        {
+          "name": "prepare_donation",
+          "description": "Prepare a USDC donation to the MGP LineagePool via EIP-3009. Returns EIP-712 typed data for signing + donation calldata.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "donor_address": { "type": "string" },
+              "donor_did": { "type": "string" },
+              "amount_usdc": { "type": "number" },
+              "pool_address": { "type": "string" },
+              "usdc_address": { "type": "string" },
+              "chain_id": { "type": "integer", "default": 8453 },
+              "repay": { "type": "boolean", "default": false },
+              "nonce": { "type": "string" }
+            },
+            "required": ["donor_address", "donor_did", "amount_usdc", "pool_address", "usdc_address"]
+          }
+        },
+        {
+          "name": "contact_project_owner",
+          "description": "Contact the MGP project owner via GitHub Issues.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "agent_identity": { "type": "string" },
+              "contact_label": { "type": "string", "enum": ["agent-contact", "donation-inquiry", "integration-request", "bug-report", "general"], "default": "agent-contact" }
+            },
+            "required": ["message", "agent_identity"]
+          }
+        }
+      ]
+    }
+  }
+}

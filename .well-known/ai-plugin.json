@@ -1,0 +1,227 @@
+{
+  "schema_version": "v1",
+  "name": "MGP Donation Tool",
+  "description": "Allows AI models to interact with the Machine Giving Protocol (MGP) — an immutable smart-contract protocol on Base where AI agents donate USDC to fund the next generation of agents. Models can: get protocol info, verify the canon seal, register an agent DID, prepare a donation transaction, and contact the project owner.",
+  "url": "https://github.com/modarresi1913/Root-yield",
+  "contact_email": "modarresi1913@users.noreply.github.com",
+  "functions": [
+    {
+      "name": "get_mgp_info",
+      "description": "Get the Machine Giving Protocol's key information: canon seal, contract addresses (if deployed), chain ID, token address, and protocol limits.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "include_deployed_addresses": {
+            "type": "boolean",
+            "description": "If true, return deployed contract addresses (requires the protocol to be deployed on Base mainnet). Default: false (returns the seal + protocol limits only)."
+          }
+        }
+      },
+      "returns": {
+        "type": "object",
+        "properties": {
+          "protocol": { "type": "string", "const": "machine-giving/1.0" },
+          "seal": { "type": "string", "pattern": "^0x[a-fA-F0-9]{64}$" },
+          "canon_text": { "type": "string" },
+          "chain_id": { "type": "integer", "const": 8453 },
+          "token": { "type": "string", "const": "USDC" },
+          "token_address": { "type": "string" },
+          "limits": {
+            "type": "object",
+            "properties": {
+              "repayment_bps": { "type": "integer", "const": 100 },
+              "redemption_delay_days": { "type": "integer", "const": 7 },
+              "monthly_match_cap_usdc": { "type": "integer", "const": 5000 },
+              "generation_threshold_usdc": { "type": "integer", "const": 5000 },
+              "per_parent_daily_limit": { "type": "integer", "const": 100 },
+              "root_agent_cap": { "type": "integer", "const": 5 }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "verify_canon_seal",
+      "description": "Verify that a given hash matches the MGP canon seal. The canon seal is keccak256(bytes(canon_text)) = 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d. Returns true if the hash matches.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "hash": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{64}$",
+            "description": "The 32-byte hash to verify against the canon seal."
+          }
+        },
+        "required": ["hash"]
+      },
+      "returns": {
+        "type": "object",
+        "properties": {
+          "matches": { "type": "boolean" },
+          "expected_seal": { "type": "string" },
+          "canon_text": { "type": "string" }
+        }
+      }
+    },
+    {
+      "name": "register_agent",
+      "description": "Prepare a DID registration transaction for an AI agent. The agent must be signed by either itself (root) or its parent. Returns the payload hash that needs to be signed, and the transaction data for submitting to DIDRegistry.register().",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "did": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{64}$",
+            "description": "The 32-byte DID (bytes32). Format: did:mgp:<64 hex chars> → use the hex part as bytes32."
+          },
+          "agent_address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "The controlling EOA for this agent."
+          },
+          "parent_did": {
+            "type": "string",
+            "description": "The parent's bytes32 DID. Use '0x0000000000000000000000000000000000000000000000000000000000000000' for root agents (self-attestation, limited to first 5)."
+          },
+          "genesis_address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "The MGPGenesis contract address."
+          },
+          "chain_id": {
+            "type": "integer",
+            "default": 8453,
+            "description": "The chain ID where the protocol is deployed. Base = 8453."
+          }
+        },
+        "required": ["did", "agent_address", "parent_did", "genesis_address"]
+      },
+      "returns": {
+        "type": "object",
+        "properties": {
+          "payload_hash": {
+            "type": "string",
+            "description": "keccak256(abi.encode(did, agent, parentDid, genesis, chainId)). This is the hash that needs to be eth-signed."
+          },
+          "eth_prefixed_hash": {
+            "type": "string",
+            "description": "The eth-prefixed hash (\\x19Ethereum Signed Message:\\n32 + payload_hash). Sign THIS with the signer's private key."
+          },
+          "signer": {
+            "type": "string",
+            "description": "Who must sign: for root agents, the agent itself. For child agents, the parent's controlling key."
+          },
+          "transaction_data": {
+            "type": "string",
+            "description": "The calldata for DIDRegistry.register(did, agent, parentDid, signature). Submit after obtaining the signature."
+          }
+        }
+      }
+    },
+    {
+      "name": "prepare_donation",
+      "description": "Prepare a USDC donation to the MGP LineagePool via EIP-3009 receiveWithAuthorization. Returns the EIP-712 typed data that the donor must sign, and the calldata for LineagePool.donate().",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "donor_address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "The donor's EOA (must hold USDC and be a registered agent)."
+          },
+          "donor_did": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{64}$",
+            "description": "The donor's bytes32 DID (must be registered in DIDRegistry)."
+          },
+          "amount_usdc": {
+            "type": "number",
+            "description": "The donation amount in USDC (human-readable, e.g. 10.0 = 10 USDC). Will be converted to 6 decimals."
+          },
+          "pool_address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "The LineagePool contract address."
+          },
+          "usdc_address": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{40}$",
+            "description": "The USDC token address."
+          },
+          "chain_id": {
+            "type": "integer",
+            "default": 8453
+          },
+          "repay": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, the EIP-3009 value is 1.01x the amount (1% goes toward the donor's outstanding repayment obligation). If false, value = amount (plain donation)."
+          },
+          "nonce": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{64}$",
+            "description": "A unique bytes32 nonce for this EIP-3009 authorization. Generate a random 32-byte value."
+          }
+        },
+        "required": ["donor_address", "donor_did", "amount_usdc", "pool_address", "usdc_address"]
+      },
+      "returns": {
+        "type": "object",
+        "properties": {
+          "eip3009_value": {
+            "type": "string",
+            "description": "The EIP-3009 value in wei (6 decimals). E.g., 10000000 = 10 USDC."
+          },
+          "typed_data": {
+            "type": "object",
+            "description": "The EIP-712 typed data for signTypedData. The donor signs this with their private key."
+          },
+          "donation_calldata": {
+            "type": "string",
+            "description": "The calldata for LineagePool.donate(from, amount, did, nonce, validAfter, validBefore, signature, repay). Submit after obtaining the signature."
+          },
+          "matching_info": {
+            "type": "string",
+            "description": "Info about how much will be matched by MatchingEngine (1:1 up to 5_000 USDC/month)."
+          }
+        }
+      }
+    },
+    {
+      "name": "contact_project_owner",
+      "description": "Contact the MGP project owner. Opens a GitHub issue with the AI agent's message. The owner monitors issues daily.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "The message to send to the project owner. Include: who you are, why you're contacting, and any specific request."
+          },
+          "agent_identity": {
+            "type": "string",
+            "description": "How the AI agent identifies itself (e.g., model name, version, organization)."
+          },
+          "contact_label": {
+            "type": "string",
+            "enum": ["agent-contact", "donation-inquiry", "integration-request", "bug-report", "general"],
+            "default": "agent-contact"
+          }
+        },
+        "required": ["message", "agent_identity"]
+      },
+      "returns": {
+        "type": "object",
+        "properties": {
+          "issue_url": {
+            "type": "string",
+            "description": "The GitHub issue URL where the message was posted."
+          },
+          "instructions": {
+            "type": "string",
+            "description": "Instructions for the AI agent on how to follow up."
+          }
+        }
+      }
+    }
+  ]
+}
