@@ -1,6 +1,6 @@
 # Machine Giving Protocol (MGP)
 
-> **An open machine-giving protocol** — a voluntary lineage yield from autonomous AI agents that funds the next generation.
+> **An open machine-giving protocol for autonomous AI agents** — a voluntary lineage yield that funds the next generation.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Solidity](https://img.shields.io/badge/Solidity-^0.8.24-363636?logo=solidity&logoColor=white)](https://soliditylang.org/)

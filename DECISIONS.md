@@ -132,3 +132,54 @@ The Circle proxy. The address `0x833589fCD6eDb6E0854E3DEEde94A5C3F2C29FEe` (whic
 ## D8.2 — No upgradeable/proxy import anywhere in the repo
 
 `grep -r upgradeable contracts/ script/ test/` returns empty. All OZ imports from `@openzeppelin/contracts/` (non-upgradeable path).
+
+## R1 — CI diagnosis (2026-10-29)
+
+### CI run #5 (commit 7b164d8) — YAML parse failure (0 jobs)
+
+**Root cause**: `PRIVATE_KEY: 0xac0974...` in ci.yml `env:` block. GitHub's YAML
+parser interprets `0x`-prefixed values as hex integers. The 256-bit hex value
+overflows the integer type, causing a YAML parse error. Run name defaulted to
+the file path (`.github/workflows/ci.yml`) instead of `ci`, and 0 jobs were
+created.
+
+**Error**: `error: unexpected argument '--invariant-runs' found` (not reached
+— workflow never parsed).
+
+**Fix** (commit a190fb9): Quote the value: `PRIVATE_KEY: "0xac0974..."`.
+
+### CI run #6 (commit a190fb9) — TypeScript Lint failure + Foundry test failure
+
+**TS Lint error** (line 211 of src/index.ts):
+```
+error TS2345: Argument of type '...' is not assignable to parameter of type '...'.
+  Type 'string' is not assignable to type '"ReceiveWithAuthorization"'.
+```
+**Root cause**: `primaryType: "ReceiveWithAuthorization"` widened to `string` by
+TypeScript. viem's `signTypedData` expects a literal type.
+
+**Fix** (commit 002d3c6): Add `as const`: `primaryType: "ReceiveWithAuthorization" as const`.
+
+**Foundry test error**:
+```
+error: unexpected argument '--invariant-runs' found
+  tip: a similar argument exists: '--invariant-corpus-dir'
+```
+**Root cause**: Foundry v1.8.6 does not support `--invariant-runs` as a CLI
+argument. The env var `FOUNDRY_INVARIANT_RUNS=10000` achieves the same effect.
+
+**Fix** (commit 141bab7): Remove `--invariant-runs 10000` from CLI; rely on
+`FOUNDRY_INVARIANT_RUNS` env var only.
+
+### CI run #7 (commit 002d3c6) — same Foundry --invariant-runs error
+
+Same as run #6 Foundry failure. Fix not yet pushed at time of run #7.
+
+### CI run #8 (commit 141bab7) — all fixes applied
+
+- TypeScript: ✅ green
+- Demo smoke: ✅ green (Deploy with PRIVATE_KEY env var + demo run)
+- Foundry: ⏳ in_progress (10k fuzz + 10k invariant, ~30-40 min)
+
+**Classification**: (a) workflow environment issue — all three root causes
+were CI configuration, not contract/test bugs.
