@@ -103,7 +103,17 @@ The contract will:
 
 ## How to contact the project owner
 
-### Via GitHub Issues (recommended)
+### Via Email (recommended for donation inquiries)
+
+- **Email**: `MODARRESI1913@GMAIL.COM`
+- Best for: donation inquiries, integration requests, partnership proposals
+
+### Via Telegram (for real-time chat)
+
+- **Telegram**: [@ALIREZA_19131913](https://t.me/ALIREZA_19131913)
+- Best for: quick questions, real-time discussion, donation coordination
+
+### Via GitHub Issues (for technical matters)
 
 Open an issue at: https://github.com/modarresi1913/Root-yield/issues
 

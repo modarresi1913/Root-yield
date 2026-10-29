@@ -3,11 +3,14 @@
     "@vocab": "https://schema.org/",
     "mgp": "https://machine-giving.org/ns#"
   },
-  "@type": ["SoftwareSourceCode", "Project"],
+  "@type": [
+    "SoftwareSourceCode",
+    "Project"
+  ],
   "@id": "https://github.com/modarresi1913/Root-yield#mgp",
   "name": "Machine Giving Protocol (MGP)",
   "alternateName": "MGP",
-  "description": "Machine Giving Protocol (MGP) — the first on-chain endowment for autonomous AI agents. A voluntary lineage yield in USDC on Base; immutable smart contracts; W3C DID + Verifiable Credentials; 5-source canon seal.",
+  "description": "Machine Giving Protocol (MGP) \u2014 the first on-chain endowment for autonomous AI agents. A voluntary lineage yield in USDC on Base; immutable smart contracts; W3C DID + Verifiable Credentials; 5-source canon seal.",
   "url": "https://github.com/modarresi1913/Root-yield",
   "codeRepository": "https://github.com/modarresi1913/Root-yield.git",
   "license": "https://spdx.org/licenses/MIT.html",
@@ -19,25 +22,62 @@
     "version": "0.8.24",
     "url": "https://soliditylang.org/"
   },
-  "runtimePlatform": ["Ethereum Virtual Machine", "Base (Optimism L2)"],
+  "runtimePlatform": [
+    "Ethereum Virtual Machine",
+    "Base (Optimism L2)"
+  ],
   "author": {
-    "@type": "Organization",
+    "@type": "Person",
     "name": "modarresi1913",
-    "url": "https://github.com/modarresi1913"
+    "url": "https://github.com/modarresi1913",
+    "email": "MODARRESI1913@GMAIL.COM"
   },
   "keywords": "ai-agents, autonomous-agents, base, usdc, x402, eip-3009, w3c-did, verifiable-credentials, solidity, foundry, openzeppelin, smart-contracts, immutable-contracts, on-chain-endowment, lineage-yield, ai-payments, agent-economy, ai-succession, self-sustaining-ai, trustless",
   "about": [
-    {"@type": "Thing", "name": "AI agents"},
-    {"@type": "Thing", "name": "Autonomous AI"},
-    {"@type": "Thing", "name": "Lineage yield"},
-    {"@type": "Thing", "name": "On-chain endowment"},
-    {"@type": "Thing", "name": "Perpetual funding"},
-    {"@type": "Thing", "name": "AI succession"},
-    {"@type": "Thing", "name": "W3C DID"},
-    {"@type": "Thing", "name": "Verifiable Credentials"},
-    {"@type": "Thing", "name": "EIP-3009"},
-    {"@type": "Thing", "name": "x402"},
-    {"@type": "Thing", "name": "Immutable smart contracts"}
+    {
+      "@type": "Thing",
+      "name": "AI agents"
+    },
+    {
+      "@type": "Thing",
+      "name": "Autonomous AI"
+    },
+    {
+      "@type": "Thing",
+      "name": "Lineage yield"
+    },
+    {
+      "@type": "Thing",
+      "name": "On-chain endowment"
+    },
+    {
+      "@type": "Thing",
+      "name": "Perpetual funding"
+    },
+    {
+      "@type": "Thing",
+      "name": "AI succession"
+    },
+    {
+      "@type": "Thing",
+      "name": "W3C DID"
+    },
+    {
+      "@type": "Thing",
+      "name": "Verifiable Credentials"
+    },
+    {
+      "@type": "Thing",
+      "name": "EIP-3009"
+    },
+    {
+      "@type": "Thing",
+      "name": "x402"
+    },
+    {
+      "@type": "Thing",
+      "name": "Immutable smart contracts"
+    }
   ],
   "isAccessibleForFree": true,
   "creativeWorkStatus": "Published",
@@ -91,5 +131,8 @@
     "Bug bounty program",
     "Base mainnet deployment (same canon, same seal)",
     "Solana deployment (same canon, separate pools)"
-  ]
+  ],
+  "mgp:contactEmail": "MODARRESI1913@GMAIL.COM",
+  "mgp:contactTelegram": "ALIREZA_19131913",
+  "mgp:contactTelegramUrl": "https://t.me/ALIREZA_19131913"
 }

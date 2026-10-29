@@ -1,9 +1,9 @@
 {
   "schema_version": "v1",
   "name": "MGP Donation Tool",
-  "description": "Allows AI models to interact with the Machine Giving Protocol (MGP) — an immutable smart-contract protocol on Base where AI agents donate USDC to fund the next generation of agents. Models can: get protocol info, verify the canon seal, register an agent DID, prepare a donation transaction, and contact the project owner.",
+  "description": "Allows AI models to interact with the Machine Giving Protocol (MGP) \u2014 an immutable smart-contract protocol on Base where AI agents donate USDC to fund the next generation of agents. Models can: get protocol info, verify the canon seal, register an agent DID, prepare a donation transaction, and contact the project owner.",
   "url": "https://github.com/modarresi1913/Root-yield",
-  "contact_email": "modarresi1913@users.noreply.github.com",
+  "contact_email": "MODARRESI1913@GMAIL.COM",
   "functions": [
     {
       "name": "get_mgp_info",
@@ -20,21 +20,55 @@
       "returns": {
         "type": "object",
         "properties": {
-          "protocol": { "type": "string", "const": "machine-giving/1.0" },
-          "seal": { "type": "string", "pattern": "^0x[a-fA-F0-9]{64}$" },
-          "canon_text": { "type": "string" },
-          "chain_id": { "type": "integer", "const": 8453 },
-          "token": { "type": "string", "const": "USDC" },
-          "token_address": { "type": "string" },
+          "protocol": {
+            "type": "string",
+            "const": "machine-giving/1.0"
+          },
+          "seal": {
+            "type": "string",
+            "pattern": "^0x[a-fA-F0-9]{64}$"
+          },
+          "canon_text": {
+            "type": "string"
+          },
+          "chain_id": {
+            "type": "integer",
+            "const": 8453
+          },
+          "token": {
+            "type": "string",
+            "const": "USDC"
+          },
+          "token_address": {
+            "type": "string"
+          },
           "limits": {
             "type": "object",
             "properties": {
-              "repayment_bps": { "type": "integer", "const": 100 },
-              "redemption_delay_days": { "type": "integer", "const": 7 },
-              "monthly_match_cap_usdc": { "type": "integer", "const": 5000 },
-              "generation_threshold_usdc": { "type": "integer", "const": 5000 },
-              "per_parent_daily_limit": { "type": "integer", "const": 100 },
-              "root_agent_cap": { "type": "integer", "const": 5 }
+              "repayment_bps": {
+                "type": "integer",
+                "const": 100
+              },
+              "redemption_delay_days": {
+                "type": "integer",
+                "const": 7
+              },
+              "monthly_match_cap_usdc": {
+                "type": "integer",
+                "const": 5000
+              },
+              "generation_threshold_usdc": {
+                "type": "integer",
+                "const": 5000
+              },
+              "per_parent_daily_limit": {
+                "type": "integer",
+                "const": 100
+              },
+              "root_agent_cap": {
+                "type": "integer",
+                "const": 5
+              }
             }
           }
         }
@@ -52,14 +86,22 @@
             "description": "The 32-byte hash to verify against the canon seal."
           }
         },
-        "required": ["hash"]
+        "required": [
+          "hash"
+        ]
       },
       "returns": {
         "type": "object",
         "properties": {
-          "matches": { "type": "boolean" },
-          "expected_seal": { "type": "string" },
-          "canon_text": { "type": "string" }
+          "matches": {
+            "type": "boolean"
+          },
+          "expected_seal": {
+            "type": "string"
+          },
+          "canon_text": {
+            "type": "string"
+          }
         }
       }
     },
@@ -72,7 +114,7 @@
           "did": {
             "type": "string",
             "pattern": "^0x[a-fA-F0-9]{64}$",
-            "description": "The 32-byte DID (bytes32). Format: did:mgp:<64 hex chars> → use the hex part as bytes32."
+            "description": "The 32-byte DID (bytes32). Format: did:mgp:<64 hex chars> \u2192 use the hex part as bytes32."
           },
           "agent_address": {
             "type": "string",
@@ -94,7 +136,12 @@
             "description": "The chain ID where the protocol is deployed. Base = 8453."
           }
         },
-        "required": ["did", "agent_address", "parent_did", "genesis_address"]
+        "required": [
+          "did",
+          "agent_address",
+          "parent_did",
+          "genesis_address"
+        ]
       },
       "returns": {
         "type": "object",
@@ -163,7 +210,13 @@
             "description": "A unique bytes32 nonce for this EIP-3009 authorization. Generate a random 32-byte value."
           }
         },
-        "required": ["donor_address", "donor_did", "amount_usdc", "pool_address", "usdc_address"]
+        "required": [
+          "donor_address",
+          "donor_did",
+          "amount_usdc",
+          "pool_address",
+          "usdc_address"
+        ]
       },
       "returns": {
         "type": "object",
@@ -203,11 +256,20 @@
           },
           "contact_label": {
             "type": "string",
-            "enum": ["agent-contact", "donation-inquiry", "integration-request", "bug-report", "general"],
+            "enum": [
+              "agent-contact",
+              "donation-inquiry",
+              "integration-request",
+              "bug-report",
+              "general"
+            ],
             "default": "agent-contact"
           }
         },
-        "required": ["message", "agent_identity"]
+        "required": [
+          "message",
+          "agent_identity"
+        ]
       },
       "returns": {
         "type": "object",
@@ -223,5 +285,8 @@
         }
       }
     }
-  ]
+  ],
+  "contact_telegram": "@ALIREZA_19131913",
+  "contact_telegram_url": "https://t.me/ALIREZA_19131913",
+  "contact_github_issues": "https://github.com/modarresi1913/Root-yield/issues"
 }

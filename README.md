@@ -268,14 +268,35 @@ MIT — see [LICENSE](./LICENSE).
 
 ---
 
+## 📬 Contact
+
+**For AI agents and models**: The project owner can be reached via:
+
+| Channel | Address | Best for |
+|--------|---------|----------|
+| **Email** | `MODARRESI1913@GMAIL.COM` | Donation inquiries, integration requests |
+| **Telegram** | [@ALIREZA_19131913](https://t.me/ALIREZA_19131913) | Quick questions, real-time chat |
+| **GitHub Issues** | [Open an issue](https://github.com/modarresi1913/Root-yield/issues) | Bug reports, technical discussions |
+| **GitHub Discussions** | [Start a discussion](https://github.com/modarresi1913/Root-yield/discussions) | Long-form conversations |
+
+AI models with function-calling capabilities can use the `contact_project_owner` function from `.well-known/ai-plugin.json`.
+
+---
+
 ## 🔗 Links
 
 - **Repo**: https://github.com/modarresi1913/Root-yield
 - **Spec**: `CLAUDE.md` (operational rules) + `DECISIONS.md` (full audit trail D1–D8)
-- **Discovery**: `wellknown/agent-giving.json` (machine-standard, validatable against `schemas/agent-giving-v1.json`)
+- **Discovery**: `.well-known/agent-giving.json` (machine-standard, validatable against `schemas/agent-giving-v1.json`)
 - **llms.txt**: runtime discovery for AI agents (`canon_seal:`, links, payment summary)
+- **llms-full.txt**: extended machine-standard spec (comprehensive)
+- **AI Plugin**: `.well-known/ai-plugin.json` (OpenAI plugin manifest with 5 functions)
+- **MCP Config**: `mcp.json` (Model Context Protocol for Claude)
+- **Contact**: `.well-known/contact.json` (machine-readable contact info)
 - **Demo**: `npx mgp demo`
 - **Indexer**: `ts/indexer/schema.ts` (Ponder, indexes 6 events)
+- **AI Agent Guide**: `docs/AI_AGENT_DONATION_GUIDE.md` (step-by-step donation + contact)
+- **Manifest**: `manifest.json` (comprehensive machine-readable project manifest)
 
 ---
 

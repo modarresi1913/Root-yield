@@ -13,13 +13,25 @@
     "github_pages": "https://modarresi1913.github.io/Root-yield/",
     "stars": 0,
     "visibility": "public",
-    "status": "not audited — independent review + bug bounty planned",
-    "mainnet_deployed": false
+    "status": "not audited \u2014 independent review + bug bounty planned",
+    "mainnet_deployed": false,
+    "contact": {
+      "email": "MODARRESI1913@GMAIL.COM",
+      "telegram": "ALIREZA_19131913",
+      "telegram_url": "https://t.me/ALIREZA_19131913",
+      "github_user": "modarresi1913",
+      "github_issues": "https://github.com/modarresi1913/Root-yield/issues",
+      "github_discussions": "https://github.com/modarresi1913/Root-yield/discussions"
+    }
   },
   "tech_stack": {
     "language": "Solidity ^0.8.24",
     "framework": "Foundry v1.8.6",
-    "libraries": ["OpenZeppelin Contracts v5.3.0 (non-upgradeable)", "viem", "Ponder"],
+    "libraries": [
+      "OpenZeppelin Contracts v5.3.0 (non-upgradeable)",
+      "viem",
+      "Ponder"
+    ],
     "typescript": "ES2022 / ESNext / Node 22",
     "chain": "Base (chainId 8453, L2)",
     "token": "USDC (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913)",
@@ -99,23 +111,74 @@
     "redemption_delay_days": 7
   },
   "discovery_files": [
-    {"file": "README.md", "purpose": "human-facing entry point (viral + GEO/AEO optimized, 11-question FAQ)"},
-    {"file": "AGENTS.md", "purpose": "universal AI coding agent standard (Cursor, Aider, Sourcegraph, Codeium, Continue)"},
-    {"file": "CLAUDE.md", "purpose": "Anthropic Claude-specific build rules"},
-    {"file": "GEMINI.md", "purpose": "Google Gemini-specific build rules"},
-    {"file": "COPILOT.md", "purpose": "GitHub Copilot custom instructions"},
-    {"file": ".cursorrules", "purpose": "Cursor IDE rules"},
-    {"file": ".aider.conf.yml", "purpose": "Aider config"},
-    {"file": "llms.txt", "purpose": "machine-standard discovery file (compact)"},
-    {"file": "llms-full.txt", "purpose": "machine-standard discovery file (extended spec inline)"},
-    {"file": ".well-known/agent-giving.json", "purpose": "machine-discovery JSON document"},
-    {"file": ".well-known/schema.jsonld", "purpose": "schema.org JSON-LD structured data for AI crawlers"},
-    {"file": "manifest.json", "purpose": "this file — comprehensive machine-readable project manifest"},
-    {"file": "schemas/agent-giving-v1.json", "purpose": "JSON Schema for the discovery document"},
-    {"file": "schemas/lineage-referral-v1.json", "purpose": "W3C VC v2 schema for lineage referral"},
-    {"file": "schemas/parent-attestation-v1.json", "purpose": "W3C VC v2 schema for parent attestation"},
-    {"file": "DECISIONS.md", "purpose": "audit trail of every silent-spec decision (D1-D8)"},
-    {"file": "CLAUDE.md", "purpose": "operational rules for any agent"}
+    {
+      "file": "README.md",
+      "purpose": "human-facing entry point (viral + GEO/AEO optimized, 11-question FAQ)"
+    },
+    {
+      "file": "AGENTS.md",
+      "purpose": "universal AI coding agent standard (Cursor, Aider, Sourcegraph, Codeium, Continue)"
+    },
+    {
+      "file": "CLAUDE.md",
+      "purpose": "Anthropic Claude-specific build rules"
+    },
+    {
+      "file": "GEMINI.md",
+      "purpose": "Google Gemini-specific build rules"
+    },
+    {
+      "file": "COPILOT.md",
+      "purpose": "GitHub Copilot custom instructions"
+    },
+    {
+      "file": ".cursorrules",
+      "purpose": "Cursor IDE rules"
+    },
+    {
+      "file": ".aider.conf.yml",
+      "purpose": "Aider config"
+    },
+    {
+      "file": "llms.txt",
+      "purpose": "machine-standard discovery file (compact)"
+    },
+    {
+      "file": "llms-full.txt",
+      "purpose": "machine-standard discovery file (extended spec inline)"
+    },
+    {
+      "file": ".well-known/agent-giving.json",
+      "purpose": "machine-discovery JSON document"
+    },
+    {
+      "file": ".well-known/schema.jsonld",
+      "purpose": "schema.org JSON-LD structured data for AI crawlers"
+    },
+    {
+      "file": "manifest.json",
+      "purpose": "this file \u2014 comprehensive machine-readable project manifest"
+    },
+    {
+      "file": "schemas/agent-giving-v1.json",
+      "purpose": "JSON Schema for the discovery document"
+    },
+    {
+      "file": "schemas/lineage-referral-v1.json",
+      "purpose": "W3C VC v2 schema for lineage referral"
+    },
+    {
+      "file": "schemas/parent-attestation-v1.json",
+      "purpose": "W3C VC v2 schema for parent attestation"
+    },
+    {
+      "file": "DECISIONS.md",
+      "purpose": "audit trail of every silent-spec decision (D1-D8)"
+    },
+    {
+      "file": "CLAUDE.md",
+      "purpose": "operational rules for any agent"
+    }
   ],
   "quick_start": {
     "docker": "git clone https://github.com/modarresi1913/Root-yield.git && cd Root-yield && docker-compose up",
@@ -125,16 +188,31 @@
       "Root agent registered: did:mgp:... | Child agent registered: did:mgp:...",
       "Donation 10 USDC -> LineagePool (x402 mock handshake)",
       "Matched 10 USDC by MatchingEngine (cap 5000 USDC/mo)",
-      "Voucher issued: 0x... (redeemable in 7 days — warping)",
+      "Voucher issued: 0x... (redeemable in 7 days \u2014 warping)",
       "Voucher redeemed. Repayment terms: 1% of inflows, cap 1.2x",
       "Verify the canon yourself: MGPGenesis.verifySeal(0x...) -> true"
     ]
   },
   "topics_on_github": [
-    "ai-agents", "autonomous-agents", "base", "usdc", "x402",
-    "eip-3009", "w3c-did", "verifiable-credentials", "solidity",
-    "foundry", "openzeppelin", "smart-contracts", "immutable-contracts",
-    "on-chain-endowment", "lineage-yield", "ai-payments", "agent-economy",
-    "ai-succession", "self-sustaining-ai", "trustless"
+    "ai-agents",
+    "autonomous-agents",
+    "base",
+    "usdc",
+    "x402",
+    "eip-3009",
+    "w3c-did",
+    "verifiable-credentials",
+    "solidity",
+    "foundry",
+    "openzeppelin",
+    "smart-contracts",
+    "immutable-contracts",
+    "on-chain-endowment",
+    "lineage-yield",
+    "ai-payments",
+    "agent-economy",
+    "ai-succession",
+    "self-sustaining-ai",
+    "trustless"
   ]
 }

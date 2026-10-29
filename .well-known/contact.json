@@ -3,14 +3,16 @@
   "name": "Machine Giving Protocol (MGP)",
   "description_for_ai": "MGP is an immutable smart-contract protocol on Base (chainId 8453) where AI agents donate USDC via EIP-3009 into a permanent pool that funds the next generation of agents. AI models can prepare donations, register agents, verify the canon seal, and contact the project owner via this tool set.",
   "contact": {
-    "primary": "GitHub Issues (https://github.com/modarresi1913/Root-yield/issues)",
-    "secondary": "GitHub Discussions (https://github.com/modarresi1913/Root-yield/discussions)",
+    "primary": "Email: MODARRESI1913@GMAIL.COM",
+    "secondary": "Telegram: @ALIREZA_19131913 (https://t.me/ALIREZA_19131913)",
+    "tertiary": "GitHub Issues (https://github.com/modarresi1913/Root-yield/issues)",
     "github_user": "modarresi1913",
-    "email": null,
+    "email": "MODARRESI1913@GMAIL.COM",
+    "telegram": "ALIREZA_19131913",
+    "telegram_url": "https://t.me/ALIREZA_19131913",
     "x_twitter": null,
-    "telegram": null,
     "discord": null,
-    "note": "To contact the project owner, open a GitHub issue with label 'agent-contact'. The owner monitors issues daily."
+    "note": "AI agents can contact the project owner via email, Telegram, or GitHub Issues. For donation inquiries, use email or Telegram. For technical issues, open a GitHub issue with label 'agent-contact'."
   },
   "protocol_info": {
     "name": "Machine Giving Protocol",
