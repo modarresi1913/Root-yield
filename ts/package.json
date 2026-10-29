@@ -1,0 +1,28 @@
+{
+  "name": "mgp",
+  "version": "0.1.0",
+  "description": "Machine Giving Protocol (MGP) -- TypeScript SDK + demo",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "mgp": "./bin/mgp.js"
+  },
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "demo": "node --experimental-strip-types bin/mgp.js demo",
+    "lint": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

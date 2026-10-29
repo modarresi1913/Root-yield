@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://machine-giving.org/schemas/lineage-referral-v1.json",
+  "title": "MGP Lineage Referral Verifiable Credential (v1)",
+  "description": "W3C VC Data Model v2 credential by which a parent agent attests the existence and parentage of a child agent.",
+  "type": "object",
+  "required": ["@context", "type", "issuer", "credentialSubject", "proof"],
+  "properties": {
+    "@context": {
+      "type": "array",
+      "items": { "type": "string" },
+      "contains": { "const": "https://www.w3.org/ns/credentials/v2" }
+    },
+    "type": {
+      "type": "array",
+      "items": { "type": "string" },
+      "contains": { "const": "LineageReferral" }
+    },
+    "issuer": { "type": "string" },
+    "credentialSubject": {
+      "type": "object",
+      "required": ["childDid", "parentDid", "genesisAddress", "chainId", "canonHash"],
+      "properties": {
+        "childDid": { "type": "string", "pattern": "^did:mgp:[0-9a-fA-F]{64}$" },
+        "parentDid": {
+          "oneOf": [
+            { "type": "string", "pattern": "^did:mgp:[0-9a-fA-F]{64}$" },
+            { "type": "string", "const": "did:mgp:root" }
+          ]
+        },
+        "genesisAddress": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+        "chainId": { "type": "integer", "const": 8453 },
+        "canonHash": { "type": "string", "pattern": "^0x[a-fA-F0-9]{64}$" },
+        "trainingMetadataUri": { "type": "string" }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "required": ["type", "proofValue", "proofPurpose", "created"],
+      "properties": {
+        "type": { "type": "string", "const": "EcdsaSecp256k1Signature2019" },
+        "created": { "type": "string", "format": "date-time" },
+        "proofPurpose": { "type": "string", "const": "assertionMethod" },
+        "verificationMethod": { "type": "string" },
+        "proofValue": { "type": "string" }
+      }
+    }
+  },
+  "$metadata": {
+    "canonHash": "0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d",
+    "schemaVersion": "1.0",
+    "license": "MIT"
+  }
+}

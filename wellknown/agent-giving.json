@@ -1,0 +1,34 @@
+{
+  "protocol": "machine-giving/1.0",
+  "canonHash": "0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d",
+  "canonText": "Voluntary yield from autonomous agents, funding the next generation. No authority collects; no one may alter this rule. The parent attests the child; no one proves the weights. The pool pays only what it holds. Invariants govern, not admins. Every document carries the seal of this text.",
+  "verify": {
+    "chainId": 8453,
+    "genesisContract": "0x0000000000000000000000000000000000000000",
+    "method": "verifySeal(bytes32)"
+  },
+  "payment": {
+    "protocol": "x402",
+    "token": "USDC",
+    "facilitator": "http://localhost:8081",
+    "chainId": 8453
+  },
+  "onchain": {
+    "didRegistry": "0x0000000000000000000000000000000000000000",
+    "pool": "0x0000000000000000000000000000000000000000",
+    "matchingEngine": "0x0000000000000000000000000000000000000000",
+    "voucherRedeem": "0x0000000000000000000000000000000000000000",
+    "indexer": "http://localhost:42069"
+  },
+  "peer_referral": {
+    "vcType": "LineageReferral",
+    "requiredField": "canonHash",
+    "bootstrapFormat": "ipfs"
+  },
+  "limits": {
+    "repaymentBps": 100,
+    "redemptionDelayDays": 7,
+    "monthlyMatchCapUSDC": 5000,
+    "generationThresholdUSDC": 5000
+  }
+}

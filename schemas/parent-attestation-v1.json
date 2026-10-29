@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://machine-giving.org/schemas/parent-attestation-v1.json",
+  "title": "MGP Parent Attestation Verifiable Credential (v1)",
+  "type": "object",
+  "required": ["@context", "type", "issuer", "credentialSubject", "proof"],
+  "properties": {
+    "@context": {
+      "type": "array",
+      "items": { "type": "string" },
+      "contains": { "const": "https://www.w3.org/ns/credentials/v2" }
+    },
+    "type": {
+      "type": "array",
+      "items": { "type": "string" },
+      "contains": { "const": "ParentAttestation" }
+    },
+    "issuer": { "type": "string" },
+    "credentialSubject": {
+      "type": "object",
+      "required": ["childDid", "parentDid", "claim", "canonHash"],
+      "properties": {
+        "childDid": { "type": "string", "pattern": "^did:mgp:[0-9a-fA-F]{64}$" },
+        "parentDid": { "type": "string", "pattern": "^did:mgp:[0-9a-fA-F]{64}$" },
+        "claim": { "type": "string" },
+        "trainingMetadataUri": { "type": "string" },
+        "canonHash": { "type": "string", "pattern": "^0x[a-fA-F0-9]{64}$" }
+      }
+    },
+    "proof": {
+      "type": "object",
+      "required": ["type", "proofValue", "proofPurpose", "created"],
+      "properties": {
+        "type": { "type": "string", "const": "EcdsaSecp256k1Signature2019" },
+        "created": { "type": "string", "format": "date-time" },
+        "proofPurpose": { "type": "string", "const": "assertionMethod" },
+        "verificationMethod": { "type": "string" },
+        "proofValue": { "type": "string" }
+      }
+    }
+  },
+  "$metadata": {
+    "canonHash": "0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d",
+    "schemaVersion": "1.0",
+    "license": "MIT"
+  }
+}

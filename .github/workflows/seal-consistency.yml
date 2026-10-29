@@ -1,0 +1,70 @@
+name: seal-consistency
+
+# Verifies that all five canonical seal sources agree with keccak256(canon.txt).
+# Spec section 0: "Tampering with the canon must break CI: prove it once in a test."
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  push:
+    paths:
+      - "canon/**"
+      - "wellknown/**"
+      - "schemas/**"
+      - "llms.txt"
+      - "contracts/MGPGenesis.sol"
+      - "script/CheckSeal.s.sol"
+      - ".github/workflows/seal-consistency.yml"
+  pull_request:
+    paths:
+      - "canon/**"
+      - "wellknown/**"
+      - "schemas/**"
+      - "llms.txt"
+      - "contracts/MGPGenesis.sol"
+      - "script/CheckSeal.s.sol"
+
+jobs:
+  check-seal:
+    name: Five-source seal consistency
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: forge build
+        run: forge build
+      - name: Local 5-source seal check
+        run: forge script script/CheckSeal.s.sol --sig "checkSealLocal()"
+      - name: Tamper test (must FAIL)
+        run: |
+          set +e
+          cp canon/canon.txt /tmp/canon.orig
+          printf 'Zoluntary yield from autonomous agents, funding the next generation. No authority collects; no one may alter this rule. The parent attests the child; no one proves the weights. The pool pays only what it holds. Invariants govern, not admins. Every document carries the seal of this text.' > canon/canon.txt
+          forge script script/CheckSeal.s.sol --sig "checkSealLocal()" > /tmp/tamper.log 2>&1
+          tamper_rc=$?
+          cp /tmp/canon.orig canon/canon.txt
+          if [ $tamper_rc -ne 0 ]; then
+            echo "PASS: tampered canon correctly rejected"
+            exit 0
+          else
+            echo "FAIL: tampered canon was NOT rejected -- SEAL BROKEN"
+            echo "::error::SEAL BROKEN -- tampered canon.txt was not detected"
+            exit 1
+          fi
+      - name: On-chain seal check (optional)
+        if: ${{ env.RPC_URL != '' }}
+        env:
+          RPC_URL: ${{ secrets.RPC_URL }}
+          MGP_GENESIS_ADDRESS: ${{ secrets.MGP_GENESIS_ADDRESS }}
+        run: forge script script/CheckSeal.s.sol --sig "checkSealOnChain()" --rpc-url $RPC_URL
+      - name: Summary on failure
+        if: failure()
+        run: |
+          echo "## SEAL BROKEN" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "One or more of the five seal sources disagrees with keccak256(canon/canon.txt)." >> $GITHUB_STEP_SUMMARY

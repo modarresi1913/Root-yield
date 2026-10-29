@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://machine-giving.org/schemas/agent-giving-v1.json",
+  "title": "MGP .well-known Agent-Giving Discovery Document (v1)",
+  "type": "object",
+  "required": ["protocol", "canonHash", "canonText", "verify", "payment", "onchain", "peer_referral", "limits"],
+  "properties": {
+    "protocol": { "type": "string", "const": "machine-giving/1.0" },
+    "canonHash": { "type": "string", "pattern": "^0x[a-fA-F0-9]{64}$" },
+    "canonText": { "type": "string" },
+    "verify": {
+      "type": "object",
+      "required": ["chainId", "genesisContract", "method"],
+      "properties": {
+        "chainId": { "type": "integer", "const": 8453 },
+        "genesisContract": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+        "method": { "type": "string", "const": "verifySeal(bytes32)" }
+      }
+    },
+    "payment": {
+      "type": "object",
+      "required": ["protocol", "token", "facilitator", "chainId"],
+      "properties": {
+        "protocol": { "type": "string", "const": "x402" },
+        "token": { "type": "string", "const": "USDC" },
+        "facilitator": { "type": "string" },
+        "chainId": { "type": "integer", "const": 8453 }
+      }
+    },
+    "onchain": {
+      "type": "object",
+      "required": ["didRegistry", "pool", "matchingEngine", "voucherRedeem"],
+      "properties": {
+        "didRegistry": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+        "pool": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+        "matchingEngine": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+        "voucherRedeem": { "type": "string", "pattern": "^0x[a-fA-F0-9]{40}$" },
+        "indexer": { "type": "string" }
+      }
+    },
+    "peer_referral": {
+      "type": "object",
+      "required": ["vcType", "requiredField", "bootstrapFormat"],
+      "properties": {
+        "vcType": { "type": "string", "const": "LineageReferral" },
+        "requiredField": { "type": "string", "const": "canonHash" },
+        "bootstrapFormat": { "type": "string", "const": "ipfs" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "required": ["repaymentBps", "redemptionDelayDays", "monthlyMatchCapUSDC", "generationThresholdUSDC"],
+      "properties": {
+        "repaymentBps": { "type": "integer", "const": 100 },
+        "redemptionDelayDays": { "type": "integer", "const": 7 },
+        "monthlyMatchCapUSDC": { "type": "integer", "const": 5000 },
+        "generationThresholdUSDC": { "type": "integer", "const": 5000 }
+      }
+    }
+  }
+}

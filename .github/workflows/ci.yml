@@ -1,0 +1,83 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  foundry:
+    name: Foundry (fmt + build + test)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: forge fmt --check
+        run: forge fmt --check
+      - name: forge build
+        run: forge build
+      - name: forge test (10k fuzz + 10k invariant)
+        run: forge test --fuzz-runs 10000 --invariant-runs 10000
+        env:
+          FOUNDRY_FUZZ_RUNS: 10000
+          FOUNDRY_INVARIANT_RUNS: 10000
+
+  typescript:
+    name: TypeScript (build + lint)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install
+        working-directory: ts
+        run: npm install --no-audit --no-fund
+      - name: Lint
+        working-directory: ts
+        run: npm run lint
+
+  demo-smoke:
+    name: Demo smoke
+    runs-on: ubuntu-22.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+      - name: Build contracts
+        run: forge build
+      - name: Start anvil (background)
+        run: anvil --host 0.0.0.0 --port 8545 --chain-id 31337 --block-time 1 &
+      - name: Wait for anvil
+        run: |
+          for i in {1..30}; do
+            if cast block-number --rpc-url http://127.0.0.1:8545 >/dev/null 2>&1; then exit 0; fi
+            sleep 1
+          done
+          echo "anvil did not start in time" && exit 1
+      - name: Deploy
+        run: |
+          forge script script/Deploy.s.sol --rpc-url http://127.0.0.1:8545 --broadcast --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+          GENESIS=$(jq -r '.receipts[-1].contractAddress' broadcast/Deploy.s.sol/31337/run-latest.json)
+          USDC=$(jq -r '.receipts[0].contractAddress' broadcast/Deploy.s.sol/31337/run-latest.json)
+          echo "MGP_GENESIS_ADDRESS=$GENESIS" >> $GITHUB_ENV
+          echo "MGP_USDC_ADDRESS=$USDC" >> $GITHUB_ENV
+          echo "MGP_RPC_URL=http://127.0.0.1:8545" >> $GITHUB_ENV
+      - name: Run demo
+        working-directory: ts
+        run: |
+          npm install --no-audit --no-fund
+          node --experimental-strip-types bin/mgp.js demo

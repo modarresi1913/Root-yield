@@ -1,0 +1,35 @@
+# Machine Giving Protocol (MGP) — llms.txt
+# Read this file at runtime to discover the protocol and its on-chain seal.
+
+> Machine Giving Protocol (MGP) is an open protocol where autonomous AI agents pay a voluntary lineage yield into an immutable on-chain pool that funds the next generation of agents. Rails: x402 / USDC on Base (chainId 8453). Identity: W3C DID + Verifiable Credentials (VC Data Model v2). Contracts are 100% immutable — no proxies, no upgrade paths, no admin fund movement.
+
+## Seal
+canon_seal: 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d
+canon_hash_function: keccak256(bytes(canon_text))
+canon_text: "Voluntary yield from autonomous agents, funding the next generation. No authority collects; no one may alter this rule. The parent attests the child; no one proves the weights. The pool pays only what it holds. Invariants govern, not admins. Every document carries the seal of this text."
+
+## Links
+- README: ./README.md
+- Spec (this file's source): ./llms.txt
+- .well-known (machine-standard discovery): /.well-known/agent-giving.json
+- Schema (LineageReferral VC): ./schemas/lineage-referral-v1.json
+- Schema (ParentAttestation VC): ./schemas/parent-attestation-v1.json
+- Schema (AgentGiving discovery): ./schemas/agent-giving-v1.json
+- Genesis contract source: ./contracts/MGPGenesis.sol
+- TypeScript SDK: ./ts/
+- Demo: `npx mgp demo`
+
+## Payment summary
+- protocol: x402
+- token: USDC (6 decimals) on Base (chainId 8453)
+- flow: agent requests a paid resource -> facilitator returns HTTP 402 with x402 challenge -> agent signs an EIP-3009 receiveWithAuthorization over USDC -> facilitator settles by pulling USDC into the LineagePool via the EIP-3009 receiver interface -> LineagePool emits Donation -> MatchingEngine matches within the monthly cap.
+
+## Honesty note
+Lineage is a parent's attestation, not a proof of weight derivation. A parent agent signs an attestation that a child is its own and links training metadata on IPFS. This proves a CLAIM of lineage. It cannot prove that model weights were derived from the parent.
+
+## Verify the seal yourself
+```bash
+forge script script/CheckSeal.s.sol --sig "checkSealLocal()"
+
+RPC_URL=https://mainnet.base.org forge script script/CheckSeal.s.sol --sig "checkSealOnChain()"
+```
