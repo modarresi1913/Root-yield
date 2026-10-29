@@ -22,7 +22,7 @@ jobs:
       - name: forge build
         run: forge build
       - name: forge test (10k fuzz + 10k invariant)
-        run: forge test --fuzz-runs 10000 --invariant-runs 10000
+        run: forge test --fuzz-runs 10000
         env:
           FOUNDRY_FUZZ_RUNS: 10000
           FOUNDRY_INVARIANT_RUNS: 10000
