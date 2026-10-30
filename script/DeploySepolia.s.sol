@@ -37,7 +37,9 @@ contract DeploySepolia is Script {
         _check("llms.txt", expectedSeal, llmsSeal);
 
         bytes32 schemaHash = vm.parseBytes32(
-            vm.parseJsonString(vm.readFile("schemas/lineage-referral-v1.json"), ".$metadata.canonHash")
+            vm.parseJsonString(
+                vm.readFile("schemas/lineage-referral-v1.json"), ".$metadata.canonHash"
+            )
         );
         _check("schemas/lineage-referral-v1.json", expectedSeal, schemaHash);
 
@@ -69,7 +71,8 @@ contract DeploySepolia is Script {
         DIDRegistry didReg = new DIDRegistry(expectedGenesis, SEPOLIA_CHAIN_ID);
         require(address(didReg) == expectedDR, "DR mismatch");
 
-        VoucherRedeem vr = new VoucherRedeem(expectedGenesis, expectedPool, address(mockUsdc), address(didReg));
+        VoucherRedeem vr =
+            new VoucherRedeem(expectedGenesis, expectedPool, address(mockUsdc), address(didReg));
         require(address(vr) == expectedVR, "VR mismatch");
 
         MatchingEngine me = new MatchingEngine(expectedGenesis, address(mockUsdc), expectedPool);
@@ -80,7 +83,8 @@ contract DeploySepolia is Script {
         );
         require(address(pool) == expectedPool, "Pool mismatch");
 
-        MGPGenesis genesis = new MGPGenesis(address(didReg), address(pool), address(me), address(vr));
+        MGPGenesis genesis =
+            new MGPGenesis(address(didReg), address(pool), address(me), address(vr));
         require(address(genesis) == expectedGenesis, "Genesis mismatch");
 
         vm.stopBroadcast();
@@ -104,21 +108,40 @@ contract DeploySepolia is Script {
         console2.log("On-chain verifySeal:", sealOk);
 
         // Write deployment manifest
-        vm.writeFile("docs/deployments.md", string(abi.encodePacked(
-            "# MGP Deployments\n\n",
-            "## Base Sepolia (chainId 84532)\n\n",
-            "| Contract | Address |\n|---|---|\n",
-            "| MGPGenesis | ", _addr(address(genesis)), " |\n",
-            "| DIDRegistry | ", _addr(address(didReg)), " |\n",
-            "| LineagePool | ", _addr(address(pool)), " |\n",
-            "| MatchingEngine | ", _addr(address(me)), " |\n",
-            "| VoucherRedeem | ", _addr(address(vr)), " |\n",
-            "| MockUSDC | ", _addr(address(mockUsdc)), " |\n\n",
-            "## Seal verification\n\n",
-            "```bash\n",
-            "cast call ", _addr(address(genesis)), " \"verifySeal(bytes32)(bool)\" 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d --rpc-url https://sepolia.base.org\n",
-            "```\n"
-        )));
+        vm.writeFile(
+            "docs/deployments.md",
+            string(
+                abi.encodePacked(
+                    "# MGP Deployments\n\n",
+                    "## Base Sepolia (chainId 84532)\n\n",
+                    "| Contract | Address |\n|---|---|\n",
+                    "| MGPGenesis | ",
+                    _addr(address(genesis)),
+                    " |\n",
+                    "| DIDRegistry | ",
+                    _addr(address(didReg)),
+                    " |\n",
+                    "| LineagePool | ",
+                    _addr(address(pool)),
+                    " |\n",
+                    "| MatchingEngine | ",
+                    _addr(address(me)),
+                    " |\n",
+                    "| VoucherRedeem | ",
+                    _addr(address(vr)),
+                    " |\n",
+                    "| MockUSDC | ",
+                    _addr(address(mockUsdc)),
+                    " |\n\n",
+                    "## Seal verification\n\n",
+                    "```bash\n",
+                    "cast call ",
+                    _addr(address(genesis)),
+                    " \"verifySeal(bytes32)(bool)\" 0x6f28de0a42aaea549b6f46e3dff1dc644bb77f5affce370a1dad25afced13e3d --rpc-url https://sepolia.base.org\n",
+                    "```\n"
+                )
+            )
+        );
     }
 
     function _check(string memory source, bytes32 expected, bytes32 actual) internal pure {
